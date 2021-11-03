@@ -2,6 +2,10 @@ package com.example.practice3jpa.entities;
 
 import javax.persistence.*;
 
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+
 import static javax.persistence.GenerationType.AUTO;
 
 @Entity
@@ -9,8 +13,13 @@ import static javax.persistence.GenerationType.AUTO;
 
 @NamedQueries({
         @NamedQuery(name=Product.FIND_ALL, query="select s from Product s"),
-
-
+        @NamedQuery(name=Product.FIND_PRODUCT_BY_ID,
+                query="select distinct s from Product s " +
+                        "left join fetch s.clients a " +
+                        "where s.id = :id"),
+        @NamedQuery(name=Product.FIND_ALL_WITH_CLIENT,
+                query="select distinct s from Product s " +
+                        "left join fetch s.clients a ")
 })
 
 @SqlResultSetMapping(
@@ -18,11 +27,12 @@ import static javax.persistence.GenerationType.AUTO;
         entities=@EntityResult(entityClass=Product.class)
 )
 
-public class Product {
+public class Product implements Serializable {
     public static final String FIND_ALL = "Product.findAll";
+    public static final String FIND_PRODUCT_BY_ID = "Product.findProductById";
+    public static final String FIND_ALL_WITH_CLIENT = "Product.findAllWithClient";
 
 
-    //insert into PRODUCT (PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_QUANTITY) values ('MacBook Pro', '900000', '10');
     @Id
     @GeneratedValue(strategy = AUTO)
     @Column(name = "ID")
@@ -37,8 +47,8 @@ public class Product {
     @Column(name = "PRODUCT_QUANTITY")
     private int productQuantity;
 
-//    @OneToMany(mappedBy = "product", cascade=CascadeType.ALL, orphanRemoval=true)
-//    private Set<Client> clients = new HashSet<>();
+    @OneToMany(mappedBy = "product", cascade=CascadeType.ALL, orphanRemoval=true)
+    private Set<Client> clients = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -72,13 +82,13 @@ public class Product {
         this.productQuantity = productQuantity;
     }
 
-//    public Set<Client> getClients() {
-//        return clients;
-//    }
-//
-//    public void setClients(Set<Client> clients) {
-//        this.clients = clients;
-//    }
+    public Set<Client> getClients() {
+        return clients;
+    }
+
+    public void setClients(Set<Client> clients) {
+        this.clients = clients;
+    }
 
     @Override
     public String toString() {
